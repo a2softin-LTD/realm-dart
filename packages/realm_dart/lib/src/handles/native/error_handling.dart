@@ -52,18 +52,17 @@ Never _raiseLastError([String? errorMessage]) {
     }
 
     final message = '${errorMessage != null ? "$errorMessage. " : ""}${lastError ?? ""}';
-    switch (lastError?.code) {
-      case realm_errno.RLM_ERR_SCHEMA_MISMATCH:
-        throw MigrationRequiredException(message);
-      default:
-        throw RealmException(message);
+    if (lastError?.code == realm_errno.RLM_ERR_SCHEMA_MISMATCH.value) {
+      throw MigrationRequiredException(message);
     }
+
+    throw RealmException(message);
   });
 }
 
 extension RealmErrorEx on realm_error {
   LastError toDart() {
     final message = this.message.cast<Utf8>().toRealmDartString();
-    return LastError(error, message, user_code_error.toUserCodeError());
+    return LastError(error.value, message, user_code_error.toUserCodeError());
   }
 }
